@@ -76,4 +76,5 @@ Then load up Energy Trace and perform the similar capture of Power with the LED 
 
 
 # Screenshots and Answers to Questions
-**Replace this section with your screenshots of Energy Trace and provide some reasoning as to Questions 1 and 2 in the Power consumption of the Interrupts Section.**
+1. The baseline is higher in the polling example because it is constantly looking for a button press, instead of only starting the check after the button interrupt.
+2. The interrupt example has the CPU disabled whenever not checking for the button, whereas the polling example is literally always looking for the button status.
