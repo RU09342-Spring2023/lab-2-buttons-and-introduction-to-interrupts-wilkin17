@@ -23,21 +23,24 @@ int main(void)
 
 
     while(1){
-        if (armed){                         // Warning state, if the sensor detects movement
+        switch (armed){
+        case (1):                           // Warning state, if the sensor detects movement
             P6OUT &= ~BIT6;                 // Disable green LED
             P1OUT ^= BIT0;                  // Toggle P1.0
             __delay_cycles(500000);         // Delay for 500000*(1/MCLK)=0.5s
             P1OUT ^= BIT0;                  // Toggle P1.0
             __delay_cycles(500000);         // Delay for 500000*(1/MCLK)=0.5s
+            break;
 
-        }
-        if (armed == 0){                    // If the sensor does not detect any motion (blinks green LED every 3 seconds)
+        case(0):                            // If the sensor does not detect any motion (blinks green LED every 3 seconds)
             P1OUT &= ~BIT0;                 // Disable red LED
             P6OUT ^= BIT6;                  // Toggle P6.6
             __delay_cycles(100000);         // Delay for 100000*(1/MCLK)=0.1s
             P6OUT ^= BIT6;                  // Toggle P6.6
             __delay_cycles(3000000);        // Delay for 3000000*(1/MCLK)=3s
+            break;
         }
+
     }
     return 0;
 }
@@ -66,4 +69,3 @@ __interrupt void Port_2(void)
     P2IFG &= ~BIT3;                  // Clear P2.3 IFG
     armed = 1;                   // Enable if the toggle should be active
 }
-
