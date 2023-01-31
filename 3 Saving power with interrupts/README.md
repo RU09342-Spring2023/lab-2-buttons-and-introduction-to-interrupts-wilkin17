@@ -78,3 +78,9 @@ Then load up Energy Trace and perform the similar capture of Power with the LED 
 # Screenshots and Answers to Questions
 1. The baseline is higher in the polling example because it is constantly looking for a button press, instead of only starting the check after the button interrupt.
 2. The interrupt example has the CPU disabled whenever not checking for the button, whereas the polling example is literally always looking for the button status.
+
+Interrupt:
+![WithInterrupts](https://user-images.githubusercontent.com/101288281/215897011-78760efe-6fe6-4a35-b98b-ba42547ca7a7.PNG)
+
+Polling Example:
+![WithSoftwarePolling](https://user-images.githubusercontent.com/101288281/215897102-dca32b17-ef3f-46eb-a107-9189033b39e1.PNG)
