@@ -8,7 +8,9 @@
 void gpioInit();
 
 char armed = 0;                             // Global Variable to check if there is movement
-int x = 0;                               // Arbitrary Counting Variable
+char alert = 0;                             // Global Alert State Variable
+int timeout = 0;                            // Global Timeout Variable
+int movement = 0;                           // Global Movement Variable
 
 int main(void)
 {
@@ -31,17 +33,29 @@ int main(void)
             __delay_cycles(500000);         // Delay for 500000*(1/MCLK)=0.5s
             P1OUT ^= BIT0;                  // Toggle P1.0
             __delay_cycles(500000);         // Delay for 500000*(1/MCLK)=0.5s
-            if (x > 8){                     // If there's no movement for 10 blinks (~10 seconds), the sensor will return to the armed state
+            if (movement > 9){              // If there's continued movement for 10 blinks (~10 seconds), the sensor will move to "alert" state
+                alert = 1;                  // Enable alert state
+                P1OUT = 0x01;               // Permanently enable red LED (until reset)
+                while(alert){
+                    if (!(P4IN & BIT1)){    // If S1 (P4.1) is pressed
+                        alert = 0;          // Leave alert state
+                        armed = 0;          // Return the sensor to the initial armed state
+                    }
+                }
+            }
+            if (timeout == 1){              // If there's no movement, the sensor will return to the armed state
                 armed = 0;
                 P2IFG &= ~BIT3;             // Clear P2.3 IFG
             }
             else{
-                x++;
+                timeout++;                  // Increment timeout Variable
             }
+            movement++;
             break;
 
         case(0):                            // If the sensor does not detect any motion (blinks green LED every 3 seconds)
             P1OUT &= ~BIT0;                 // Disable red LED
+            movement = 0;                   // Reset movement variable
             P6OUT ^= BIT6;                  // Toggle P6.6
             __delay_cycles(100000);         // Delay for 100000*(1/MCLK)=0.1s
             P6OUT ^= BIT6;                  // Toggle P6.6
@@ -59,7 +73,7 @@ void gpioInit(){
     P1OUT &= ~BIT0;                         // Clear P1.0 output latch for a defined power-on state
     P1DIR |= BIT0;                          // Set P1.0 to output direction
 
-    P4DIR &= ~BIT1;                         // Set P4.1 to input direction
+    P4DIR &= ~BIT1;                         // Configure P4.1 to an Input
     P4REN |= BIT1;                          // Enable Resistor on P4.1
     P4OUT |= BIT1;                          // Configure Resistor on P4.1 to be Pullup
 
@@ -67,14 +81,15 @@ void gpioInit(){
     P2OUT |= BIT3;                          // Configure P2.3 as pulled-up
     P2REN |= BIT3;                          // P2.3 pull-up register enable
     P2IES &= ~BIT3;                         // P2.3 Low --> High edge
-    P2IE |= BIT3;                           // P2.3 interrupt enabled
+    P2IE  |= BIT3;                          // P2.3 interrupt enabled
 }
 
 // Port 2 interrupt service routine
 #pragma vector=PORT2_VECTOR
 __interrupt void Port_2(void)
 {
-    armed = 1;                   // Enable if the toggle should be active
-    x = 0;                       // Reset movement timer
+    armed = 1;                   // Set the sensor to warning state
+    timeout = 0;                 // Reset timeout variable
     P2IFG &= ~BIT3;              // Clear P2.3 IFG
 }
+
