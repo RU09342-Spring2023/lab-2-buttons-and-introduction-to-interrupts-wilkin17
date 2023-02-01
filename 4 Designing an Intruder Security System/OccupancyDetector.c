@@ -8,6 +8,7 @@
 void gpioInit();
 
 char armed = 0;                             // Global Variable to check if there is movement
+int x = 0;                               // Arbitrary Counting Variable
 
 int main(void)
 {
@@ -30,6 +31,13 @@ int main(void)
             __delay_cycles(500000);         // Delay for 500000*(1/MCLK)=0.5s
             P1OUT ^= BIT0;                  // Toggle P1.0
             __delay_cycles(500000);         // Delay for 500000*(1/MCLK)=0.5s
+            if (x > 8){                     // If there's no movement for 10 blinks (~10 seconds), the sensor will return to the armed state
+                armed = 0;
+                P2IFG &= ~BIT3;             // Clear P2.3 IFG
+            }
+            else{
+                x++;
+            }
             break;
 
         case(0):                            // If the sensor does not detect any motion (blinks green LED every 3 seconds)
@@ -66,6 +74,7 @@ void gpioInit(){
 #pragma vector=PORT2_VECTOR
 __interrupt void Port_2(void)
 {
-    P2IFG &= ~BIT3;                  // Clear P2.3 IFG
     armed = 1;                   // Enable if the toggle should be active
+    x = 0;                       // Reset movement timer
+    P2IFG &= ~BIT3;              // Clear P2.3 IFG
 }
